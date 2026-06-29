@@ -79,7 +79,7 @@ function CoffeeSteam() {
             top:  offY + (COFFEE_PCT.yPct / 100) * imgH,
         }}>
             <svg width={svgW} height={svgH} viewBox="0 0 60 170"
-                style={{ position: 'absolute', left: -svgW / 2, bottom: 0, overflow: 'visible' }}>
+                 style={{ position: 'absolute', left: -svgW / 2, bottom: 0, overflow: 'visible' }}>
                 <defs>
                     <linearGradient id="office-steam-grad" x1="0" y1="1" x2="0" y2="0">
                         <stop offset="0"    stopColor="#e8f3fc" stopOpacity="0.08" />
@@ -95,14 +95,14 @@ function CoffeeSteam() {
                     </filter>
                     <path id="office-steam-path" d={STEAM_PHASES[0]}>
                         <animate attributeName="d" dur="4s" repeatCount="indefinite"
-                            values={STEAM_PHASES.join(';')} />
+                                 values={STEAM_PHASES.join(';')} />
                     </path>
                 </defs>
                 <g fill="none" stroke="url(#office-steam-grad)" strokeLinecap="round">
                     <use href="#office-steam-path" strokeWidth="13" opacity="0.6" filter="url(#office-steam-haze)" />
                     <use href="#office-steam-path" strokeWidth="7" opacity="1" filter="url(#office-steam-blur)" />
                     <animate attributeName="opacity" dur="4.2s" repeatCount="indefinite"
-                        values="0.8;1;0.7;0.95;0.8" />
+                             values="0.8;1;0.7;0.95;0.8" />
                 </g>
             </svg>
         </div>
@@ -234,8 +234,8 @@ export default function OfficeView({ portId, sessionId, myPlayerId, currentPortN
                     backdropFilter: 'blur(6px)', boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
                     pointerEvents: 'auto', transition: 'background 0.15s ease',
                 }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(180,40,40,0.7)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(4,9,15,0.72)'}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(180,40,40,0.7)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(4,9,15,0.72)'}
                 >X</button>
                 <h3 style={{
                     margin: 0, color: '#e8f2ff',
@@ -407,7 +407,7 @@ function FinancesInMonitor({ myPlayerId, currentTick, refreshMyBalance, pushToas
             try {
                 const h = await gameService.getLoanHistory(loanId);
                 setHistory(prev => ({ ...prev, [loanId]: h }));
-            } catch (err) { pushToast('Error', err.message); }
+            } catch { /* Fehler-Toast kommt global aus gameService */ }
         }
     }
 
@@ -421,7 +421,7 @@ function FinancesInMonitor({ myPlayerId, currentTick, refreshMyBalance, pushToas
                 kind === 'payoff' ? 'Balance settled in full.' : `Paid ${eur(loan.tickPayment)}.`);
             setHistory(prev => { const n = { ...prev }; delete n[loan.id]; return n; });
             await loadAll();
-        } catch (err) { pushToast('Error', err.message); }
+        } catch { /* Fehler-Toast kommt global aus gameService */ }
         finally { setBusyLoan(null); }
     }
 
@@ -432,7 +432,7 @@ function FinancesInMonitor({ myPlayerId, currentTick, refreshMyBalance, pushToas
             try {
                 const h = await gameService.getMortgageHistory(mortgageId);
                 setHistoryM(prev => ({ ...prev, [mortgageId]: h }));
-            } catch (err) { pushToast('Error', err.message); }
+            } catch { /* Fehler-Toast kommt global aus gameService */ }
         }
     }
 
@@ -446,7 +446,7 @@ function FinancesInMonitor({ myPlayerId, currentTick, refreshMyBalance, pushToas
                 kind === 'payoff' ? `Lien on ${mortgage.shipName} released.` : `Paid ${eur(mortgage.tickPayment)}.`);
             setHistoryM(prev => { const n = { ...prev }; delete n[mortgage.id]; return n; });
             await loadAll();
-        } catch (err) { pushToast('Error', err.message); }
+        } catch { /* Fehler-Toast kommt global aus gameService */ }
         finally { setBusyMortgage(null); }
     }
 
@@ -608,24 +608,24 @@ function LoansPane({ loans, loading, expanded, history, busyLoan, onToggleHistor
                                 ) : (
                                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
                                         <thead>
-                                            <tr style={{ color: '#64748b', textAlign: 'left' }}>
-                                                <th style={finTh}>Day</th><th style={finTh}>Type</th>
-                                                <th style={{ ...finTh, textAlign: 'right' }}>Amount</th>
-                                                <th style={{ ...finTh, textAlign: 'right' }}>Balance</th>
-                                            </tr>
+                                        <tr style={{ color: '#64748b', textAlign: 'left' }}>
+                                            <th style={finTh}>Day</th><th style={finTh}>Type</th>
+                                            <th style={{ ...finTh, textAlign: 'right' }}>Amount</th>
+                                            <th style={{ ...finTh, textAlign: 'right' }}>Balance</th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                            {history[loan.id].map(tx => {
-                                                const m = TX_META[tx.type] ?? { label: tx.type, color: '#475569', sign: '' };
-                                                return (
-                                                    <tr key={tx.id} style={{ borderTop: '1px solid #f1f5f9' }}>
-                                                        <td style={finTd}>{tx.tick}</td>
-                                                        <td style={{ ...finTd, color: m.color, fontWeight: 600 }}>{m.label}</td>
-                                                        <td style={{ ...finTd, textAlign: 'right', color: m.color }}>{m.sign} {eur(tx.amount)}</td>
-                                                        <td style={{ ...finTd, textAlign: 'right' }}>{eur(tx.balanceAfter)}</td>
-                                                    </tr>
-                                                );
-                                            })}
+                                        {history[loan.id].map(tx => {
+                                            const m = TX_META[tx.type] ?? { label: tx.type, color: '#475569', sign: '' };
+                                            return (
+                                                <tr key={tx.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                                                    <td style={finTd}>{tx.tick}</td>
+                                                    <td style={{ ...finTd, color: m.color, fontWeight: 600 }}>{m.label}</td>
+                                                    <td style={{ ...finTd, textAlign: 'right', color: m.color }}>{m.sign} {eur(tx.amount)}</td>
+                                                    <td style={{ ...finTd, textAlign: 'right' }}>{eur(tx.balanceAfter)}</td>
+                                                </tr>
+                                            );
+                                        })}
                                         </tbody>
                                     </table>
                                 )}
@@ -705,24 +705,24 @@ function MortgagesPane({ mortgages, loading, expanded, history, busyMortgage, on
                                 ) : (
                                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11.5 }}>
                                         <thead>
-                                            <tr style={{ color: '#64748b', textAlign: 'left' }}>
-                                                <th style={finTh}>Day</th><th style={finTh}>Type</th>
-                                                <th style={{ ...finTh, textAlign: 'right' }}>Amount</th>
-                                                <th style={{ ...finTh, textAlign: 'right' }}>Balance</th>
-                                            </tr>
+                                        <tr style={{ color: '#64748b', textAlign: 'left' }}>
+                                            <th style={finTh}>Day</th><th style={finTh}>Type</th>
+                                            <th style={{ ...finTh, textAlign: 'right' }}>Amount</th>
+                                            <th style={{ ...finTh, textAlign: 'right' }}>Balance</th>
+                                        </tr>
                                         </thead>
                                         <tbody>
-                                            {history[m.id].map(tx => {
-                                                const meta = TX_META[tx.type] ?? { label: tx.type, color: '#475569', sign: '' };
-                                                return (
-                                                    <tr key={tx.id} style={{ borderTop: '1px solid #f1f5f9' }}>
-                                                        <td style={finTd}>{tx.tick}</td>
-                                                        <td style={{ ...finTd, color: meta.color, fontWeight: 600 }}>{meta.label}</td>
-                                                        <td style={{ ...finTd, textAlign: 'right', color: meta.color }}>{meta.sign} {eur(tx.amount)}</td>
-                                                        <td style={{ ...finTd, textAlign: 'right' }}>{eur(tx.balanceAfter)}</td>
-                                                    </tr>
-                                                );
-                                            })}
+                                        {history[m.id].map(tx => {
+                                            const meta = TX_META[tx.type] ?? { label: tx.type, color: '#475569', sign: '' };
+                                            return (
+                                                <tr key={tx.id} style={{ borderTop: '1px solid #f1f5f9' }}>
+                                                    <td style={finTd}>{tx.tick}</td>
+                                                    <td style={{ ...finTd, color: meta.color, fontWeight: 600 }}>{meta.label}</td>
+                                                    <td style={{ ...finTd, textAlign: 'right', color: meta.color }}>{meta.sign} {eur(tx.amount)}</td>
+                                                    <td style={{ ...finTd, textAlign: 'right' }}>{eur(tx.balanceAfter)}</td>
+                                                </tr>
+                                            );
+                                        })}
                                         </tbody>
                                     </table>
                                 )}
@@ -991,8 +991,8 @@ function AppTitleBar({ icon, title, color, onClose }) {
                 fontSize: 15, fontWeight: 700, cursor: 'pointer', borderRadius: 3,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
-                onMouseEnter={e => e.currentTarget.style.background = '#dc2626'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.18)'}
+                    onMouseEnter={e => e.currentTarget.style.background = '#dc2626'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.18)'}
             >X</button>
         </div>
     );
@@ -1090,7 +1090,7 @@ function FleetInMonitor({ myPlayerId, ports, currentTick, activeShips, refreshMy
                 setDetailShip(null);
                 reloadAndSync();
             }
-        } catch (err) { pushToast('Error', err.message); }
+        } catch { /* Fehler-Toast kommt global aus gameService */ }
         finally { setLoading(false); }
     }
 
@@ -1105,16 +1105,16 @@ function FleetInMonitor({ myPlayerId, ports, currentTick, activeShips, refreshMy
             if (refreshMyBalance) await refreshMyBalance();
             await reloadAndSync();
             pushToast('Ship sold', `${ship.name} sold for ${(result?.salePrice ?? 0).toLocaleString()}🪙.`);
-        } catch (err) {
-            pushToast('Sale failed', err.message);
+        } catch {
+            /* Fehler-Toast kommt global aus gameService */
         } finally {
             setSelling(false);
         }
     }
 
     const portList = useMemo(() =>
-        Array.from(new Map(fleet.map(s => [s.currentPortId, ports.find(p => p.id === s.currentPortId)?.name ?? s.currentPortId]))).map(([id, name]) => ({ id, name })),
-    [fleet, ports]);
+            Array.from(new Map(fleet.map(s => [s.currentPortId, ports.find(p => p.id === s.currentPortId)?.name ?? s.currentPortId]))).map(([id, name]) => ({ id, name })),
+        [fleet, ports]);
 
     const filtered = useMemo(() => {
         const sf = STATUS_FILTERS.find(f => f.id === statusFilter) || STATUS_FILTERS[0];
@@ -1182,8 +1182,8 @@ function FleetInMonitor({ myPlayerId, ports, currentTick, activeShips, refreshMy
                 {loading && fleet.length === 0
                     ? <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40, color: '#64748b', fontSize: 14, fontWeight: 600 }}>Loading fleet…</div>
                     : sorted.length === 0
-                    ? <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40, color: '#64748b', background: '#fff', border: '1px dashed #c4d0de', borderRadius: 6, fontSize: 14, fontWeight: 600 }}>— No ships match these filters —</div>
-                    : sorted.map(ship => <LightShipCard key={ship.id} ship={ship} ports={ports} activeShips={activeShips} onAction={handleAction} onClick={() => setDetailShip(ship)} />)
+                        ? <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 40, color: '#64748b', background: '#fff', border: '1px dashed #c4d0de', borderRadius: 6, fontSize: 14, fontWeight: 600 }}>— No ships match these filters —</div>
+                        : sorted.map(ship => <LightShipCard key={ship.id} ship={ship} ports={ports} activeShips={activeShips} onAction={handleAction} onClick={() => setDetailShip(ship)} />)
                 }
             </div>
 
@@ -1660,16 +1660,16 @@ function QA({ icon, label, onClick, disabled, danger, title }) {
     const hoverBg   = danger ? '#fee2e2' : '#dbeafe';
     return (
         <button onClick={onClick} disabled={disabled} title={title}
-            onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
-            style={{
-                background: hover && !disabled ? hoverBg : '#fff',
-                border: '1px solid ' + (hover && !disabled ? baseColor : '#cbd5e1'),
-                color: baseColor, padding: '6px 3px', borderRadius: 3,
-                fontSize: 9.5, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase',
-                cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.4 : 1,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
-                transition: 'background 0.12s ease, border-color 0.12s ease',
-            }}
+                onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+                style={{
+                    background: hover && !disabled ? hoverBg : '#fff',
+                    border: '1px solid ' + (hover && !disabled ? baseColor : '#cbd5e1'),
+                    color: baseColor, padding: '6px 3px', borderRadius: 3,
+                    fontSize: 9.5, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase',
+                    cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.4 : 1,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                    transition: 'background 0.12s ease, border-color 0.12s ease',
+                }}
         >
             <span style={{ fontSize: 13 }}>{icon}</span>
             {label}
@@ -1720,7 +1720,7 @@ function CargoInMonitor({ portId, sessionId, myPlayerId, currentPortName, ports,
                     ?? available[0];
                 setSelectedShipId(preferred.id);
             }
-        } catch (err) { pushToast('Error', err.message); }
+        } catch { /* Fehler-Toast kommt global aus gameService */ }
     }
 
     async function loadData() {
@@ -1738,7 +1738,7 @@ function CargoInMonitor({ portId, sessionId, myPlayerId, currentPortName, ports,
             pushToast('Cargo Accepted', `${confirmCargo.destinationPortName} run confirmed.`);
             setConfirmCargo(null);
             onAccepted();
-        } catch (err) { pushToast('Error', err.message); setLoading(false); setConfirmCargo(null); }
+        } catch { setLoading(false); setConfirmCargo(null); }
     }
 
     const active  = contracts.filter(c => c.expiresAtTick > currentTick);
@@ -1782,11 +1782,11 @@ function CargoInMonitor({ portId, sessionId, myPlayerId, currentPortName, ports,
                     ? <p style={{ textAlign: 'center', padding: 35, color: '#64748b', fontWeight: 600, fontSize: 13 }}>— NO ACTIVE CONTRACTS —</p>
                     : visible.map(c => (
                         <InMonitorContractRow key={c.id} cargo={c} viewMode={viewMode} portId={activePortId} currentTick={currentTick}
-                            selectedShip={selectedShip}
-                            disabled={loading || idleShips.length === 0}
-                            onAccept={() => setConfirmCargo(c)}
-                            highlighted={focusContractId === c.id}
-                            rowRef={focusContractId === c.id ? focusRowRef : null} />
+                                              selectedShip={selectedShip}
+                                              disabled={loading || idleShips.length === 0}
+                                              onAccept={() => setConfirmCargo(c)}
+                                              highlighted={focusContractId === c.id}
+                                              rowRef={focusContractId === c.id ? focusRowRef : null} />
                     ))}
             </div>
 

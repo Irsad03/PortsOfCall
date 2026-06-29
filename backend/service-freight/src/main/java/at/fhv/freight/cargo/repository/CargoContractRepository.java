@@ -18,6 +18,9 @@ public interface CargoContractRepository extends JpaRepository<CargoContract, St
     long countBySessionIdAndOriginPortIdAndStatusAndExpiresAtTickGreaterThan(
             String sessionId, String originPortId, CargoStatus status, Integer currentTick);
 
+    long countBySessionIdAndOriginPortIdAndStatusAndExpiresAtTickGreaterThanAndRequiredCapacityLessThanEqual(
+            String sessionId, String originPortId, CargoStatus status, Integer currentTick, Integer requiredCapacity);
+
     List<CargoContract> findBySessionIdAndStatus(String sessionId, CargoStatus status);
 
     List<CargoContract> findByAssignedShipIdAndStatus(String assignedShipId, CargoStatus status);
