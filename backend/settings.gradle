@@ -1,0 +1,8 @@
+rootProject.name = 'backend'
+
+include 'service-navigation'
+include 'service-session'
+include 'service-player'
+include 'service-freight'
+include 'service-game-engine'
+include 'api-gateway'

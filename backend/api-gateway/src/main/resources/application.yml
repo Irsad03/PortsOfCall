@@ -1,0 +1,118 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # Global CORS – replaces the @CrossOrigin annotations the monolith had on each controller.
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origin-patterns:
+                  - "http://localhost:5173"
+                  - "http://localhost:5174"
+                  - "http://10.0.40.182:5173"
+                allowed-methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"]
+                allowed-headers: "*"
+                allow-credentials: true
+                max-age: 3600
+
+          # Route table — frontend talks only to the gateway.
+          routes:
+            # REST endpoints
+            - id: session-rest
+              uri: ${services.session.url:http://localhost:8081}
+              predicates:
+                - Path=/api/sessions/**
+
+            - id: player-rest
+              uri: ${services.player.url:http://localhost:8082}
+              predicates:
+                - Path=/api/players/**
+
+            - id: bank-rest
+              uri: ${services.player.url:http://localhost:8082}
+              predicates:
+                - Path=/api/bank/**
+
+            - id: loan-rest
+              uri: ${services.player.url:http://localhost:8082}
+              predicates:
+                - Path=/api/loans/**
+
+            - id: mortgage-rest
+              uri: ${services.player.url:http://localhost:8082}
+              predicates:
+                - Path=/api/mortgages/**
+
+            - id: ship-rest
+              uri: ${services.freight.url:http://localhost:8083}
+              predicates:
+                - Path=/api/ships/**
+
+            - id: cargo-rest
+              uri: ${services.freight.url:http://localhost:8083}
+              predicates:
+                - Path=/api/cargo/**
+
+            - id: customs-rest
+              uri: ${services.freight.url:http://localhost:8083}
+              predicates:
+                - Path=/api/customs/**
+
+            - id: port-rest
+              uri: ${services.navigation.url:http://localhost:8085}
+              predicates:
+                - Path=/api/ports/**
+
+            - id: route-rest
+              uri: ${services.navigation.url:http://localhost:8085}
+              predicates:
+                - Path=/api/routes/**
+
+            - id: political-events-rest
+              uri: ${services.navigation.url:http://localhost:8085}
+              predicates:
+                - Path=/api/political-events/**
+
+            # WebSocket endpoints
+            # `ws://` URI scheme tells Gateway to upgrade the HTTP connection
+            # to a WebSocket and tunnel STOMP frames to the upstream service.
+            - id: session-ws
+              uri: ${services.session.ws:ws://localhost:8081}
+              predicates:
+                - Path=/ws-session/**
+
+            - id: cargo-ws
+              uri: ${services.freight.ws:ws://localhost:8083}
+              predicates:
+                - Path=/ws-cargo/**
+
+            - id: engine-ws
+              uri: ${services.engine.ws:ws://localhost:8087}
+              predicates:
+                - Path=/ws-engine/**
+
+server:
+  port: 8080
+
+services:
+  session:
+    url: ${SERVICES_SESSION_URL:http://localhost:8081}
+    ws: ${SERVICES_SESSION_WS:ws://localhost:8081}
+  player:
+    url: ${SERVICES_PLAYER_URL:http://localhost:8082}
+  freight:
+    url: ${SERVICES_SHIP_URL:http://localhost:8083}
+    ws: ${SERVICES_CARGO_WS:ws://localhost:8083}
+  navigation:
+    url: ${SERVICES_PORT_URL:http://localhost:8085}
+  engine:
+    url: ${SERVICES_ENGINE_URL:http://localhost:8087}
+    ws: ${SERVICES_ENGINE_WS:ws://localhost:8087}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty: WARN

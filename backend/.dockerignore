@@ -1,0 +1,17 @@
+build/
+*/build/
+.gradle/
+*/.gradle/
+
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+src/
+
+*.log
+
+**/* 2.java
+**/* 2.png
+**/* 2.md

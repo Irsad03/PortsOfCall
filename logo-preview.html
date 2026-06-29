@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Ports of Call — Logo Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #04090f;
+      background-image:
+        linear-gradient(rgba(40,120,208,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(40,120,208,0.018) 1px, transparent 1px);
+      background-size: 24px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: 'Press Start 2P', monospace;
+    }
+
+    /* Simulierter Hintergrund wie in der App */
+    .preauth-bg {
+      background:
+        linear-gradient(to bottom, rgba(4,9,20,0.38) 0%, rgba(6,14,30,0.50) 65%, rgba(4,8,18,0.65) 100%),
+        #0c1e3c;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    /* Logo Container */
+    .poc-logo {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 2rem;
+      letter-spacing: 0;
+    }
+
+    .poc-text {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1rem;
+      color: #e8b830;
+      text-shadow:
+        0 0 20px rgba(200,154,32,0.65),
+        0 0 45px rgba(200,154,32,0.25),
+        2px 3px 0 rgba(0,0,0,0.8);
+      letter-spacing: 4px;
+      line-height: 1;
+    }
+
+    .poc-icon {
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .poc-ring {
+      animation: poc-ring-spin 4s linear infinite;
+      transform-origin: center center;
+    }
+
+    @keyframes poc-ring-spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .subtitle {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.45rem;
+      color: rgba(200,220,240,0.65);
+      letter-spacing: 3px;
+      text-align: center;
+    }
+
+    /* Info box */
+    .info {
+      margin-top: 3rem;
+      border: 1px solid rgba(200,154,32,0.3);
+      padding: 1rem 1.5rem;
+      color: rgba(200,220,240,0.7);
+      font-size: 0.5rem;
+      letter-spacing: 1px;
+      line-height: 2;
+      max-width: 480px;
+      text-align: center;
+    }
+    .info span { color: #e8b830; }
+  </style>
+</head>
+<body>
+<div class="preauth-bg">
+
+  <h1 class="poc-logo" id="logo">
+    <!-- "P" -->
+    <span class="poc-text">P</span>
+
+    <!-- "O" → rotierender Rettungsring -->
+    <span class="poc-icon poc-ring" title="O" id="ring">
+      <!-- SVG wird per JS generiert -->
+    </span>
+
+    <!-- "r" -->
+    <span class="poc-text">r</span>
+
+    <!-- "t" → Anker -->
+    <span class="poc-icon" title="t" id="anchor">
+      <!-- SVG wird per JS generiert -->
+    </span>
+
+    <!-- "s of Call" -->
+    <span class="poc-text">s of Call</span>
+  </h1>
+
+  <p class="subtitle">Segel setzen · Handel treiben · Herrschen</p>
+
+  <div class="info">
+    <span>O</span> = Rettungsring (rotiert) &nbsp;|&nbsp; <span>t</span> = Anker<br>
+    Pixel-Art Stil passend zum Lobby-Hintergrundbild
+  </div>
+</div>
+
+<script>
+  const PX = 3;
+  const GOLD = '#e8b830';
+  const RING_RED = '#d43030';
+  const RING_CREAM = '#f0e8d8';
+
+  // Pixel-Art Anker (7×9)
+  const ANCHOR = [
+    [0,0,1,1,1,0,0],
+    [0,1,0,0,0,1,0],
+    [0,0,1,1,1,0,0],
+    [1,1,1,1,1,1,1],
+    [0,0,0,1,0,0,0],
+    [0,0,0,1,0,0,0],
+    [1,0,0,1,0,0,1],
+    [1,1,0,0,0,1,1],
+    [0,0,1,0,1,0,0],
+  ];
+
+  // Pixel-Art Rettungsring (8×8)
+  const RING = [
+    [0,0,1,1,1,1,0,0],
+    [0,1,1,0,0,1,1,0],
+    [1,1,0,0,0,0,1,1],
+    [1,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,1],
+    [1,1,0,0,0,0,1,1],
+    [0,1,1,0,0,1,1,0],
+    [0,0,1,1,1,1,0,0],
+  ];
+
+  function ringColor(r, c) {
+    const isRed = (r < 4 && c >= 4) || (r >= 4 && c < 4);
+    return isRed ? RING_RED : RING_CREAM;
+  }
+
+  function makeSvg(pixels, colorFn, defaultColor, extraFilter) {
+    const rows = pixels.length;
+    const cols = pixels[0].length;
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('width', cols * PX);
+    svg.setAttribute('height', rows * PX);
+    svg.setAttribute('viewBox', `0 0 ${cols * PX} ${rows * PX}`);
+    svg.setAttribute('shape-rendering', 'crispEdges');
+    svg.style.imageRendering = 'pixelated';
+    svg.style.display = 'block';
+    if (extraFilter) svg.style.filter = extraFilter;
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (!pixels[r][c]) continue;
+        const rect = document.createElementNS(ns, 'rect');
+        rect.setAttribute('x', c * PX);
+        rect.setAttribute('y', r * PX);
+        rect.setAttribute('width', PX);
+        rect.setAttribute('height', PX);
+        rect.setAttribute('fill', colorFn ? colorFn(r, c) : defaultColor);
+        svg.appendChild(rect);
+      }
+    }
+    return svg;
+  }
+
+  // Rettungsring einfügen
+  document.getElementById('ring').appendChild(
+    makeSvg(RING, ringColor, null,
+      'drop-shadow(0 0 5px rgba(200,64,32,0.7)) drop-shadow(2px 3px 0 rgba(0,0,0,0.8))')
+  );
+
+  // Anker einfügen
+  document.getElementById('anchor').appendChild(
+    makeSvg(ANCHOR, null, GOLD,
+      'drop-shadow(0 0 4px rgba(200,154,32,0.6)) drop-shadow(2px 3px 0 rgba(0,0,0,0.8))')
+  );
+</script>
+</body>
+</html>

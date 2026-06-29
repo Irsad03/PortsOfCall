@@ -1,0 +1,13 @@
+.idea/
+.vscode/
+.node_modules/
+.node_modules/stompjs/
+/node_modules/
+
+.idea/gradle.xml
+
+.claude/
+
+# Notes, Mockups
+*.docx
+*.pdf

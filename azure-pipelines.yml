@@ -1,0 +1,58 @@
+trigger:
+  - main
+
+pool:
+  name: SelfHostedVM
+
+stages:
+  - stage: TearDown
+    displayName: 'Tear down existing deployment (containers + volumes)'
+    jobs:
+      - job: Down
+        displayName: 'docker compose down -v --remove-orphans'
+        steps:
+          - script: |
+              docker compose -p portsofcall -f docker-compose.yml down -v --remove-orphans || true
+            displayName: 'Stop containers + remove volumes (DB wipe)'
+
+          - script: |
+              docker ps -aq --filter "name=portsofcall" | xargs -r docker rm -f
+            displayName: 'Force-remove any leftover portsofcall containers'
+
+          - script: |
+              docker volume ls -q --filter "name=portsofcall" | xargs -r docker volume rm -f
+            displayName: 'Force-remove any leftover portsofcall volumes'
+
+          - script: |
+              docker images "portsofcall*" -q | xargs -r docker rmi -f
+            displayName: 'Remove old portsofcall images (force clean rebuild)'
+
+  - stage: Build
+    displayName: 'Build all microservice images (no cache)'
+    dependsOn: TearDown
+    jobs:
+      - job: BuildAndPush
+        displayName: 'docker compose build --no-cache --pull'
+        steps:
+          - script: |
+              docker compose -p portsofcall -f docker-compose.yml build --no-cache --pull
+            displayName: 'Build all backend + frontend images from scratch'
+
+  - stage: Deploy
+    displayName: 'Deploy Application'
+    dependsOn: Build
+    jobs:
+      - job: Deploy
+        displayName: 'Start all containers (fresh DB)'
+        steps:
+          - script: |
+              docker compose -p portsofcall -f docker-compose.yml up -d
+            displayName: 'docker compose up -d'
+
+          - script: |
+              docker compose -p portsofcall -f docker-compose.yml ps
+            displayName: 'Show running containers'
+
+          - script: |
+              docker image prune -f
+            displayName: 'Prune dangling images (housekeeping)'

@@ -1,0 +1,168 @@
+x-backend-defaults: &backend-defaults
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+  environment: &backend-env
+    DB_HOST: postgres
+    DB_PORT: "5432"
+    DB_USER: sa
+    DB_PASSWORD: secret
+    # Internal service-to-service URLs (all on the portsofcall network)
+    SERVICES_SESSION_URL: http://service-session:8081
+    SERVICES_PLAYER_URL:  http://service-player:8082
+    SERVICES_SHIP_URL:    http://service-freight:8083
+    SERVICES_CARGO_URL:   http://service-freight:8083
+    SERVICES_PORT_URL:    http://service-navigation:8085
+    SERVICES_ROUTE_URL:   http://service-navigation:8085
+    SERVICES_ENGINE_URL:  http://service-game-engine:8087
+
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: portsofcall-postgres
+    environment:
+      POSTGRES_USER: sa
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sa -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  service-navigation:
+    <<: *backend-defaults
+    container_name: portsofcall-navigation
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: service-navigation
+    environment:
+      <<: *backend-env
+      DB_NAME: portsofcall_navigation
+
+  service-player:
+    <<: *backend-defaults
+    container_name: portsofcall-player
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: service-player
+    environment:
+      <<: *backend-env
+      DB_NAME: portsofcall_players
+    depends_on:
+      postgres:
+        condition: service_healthy
+      service-navigation:
+        condition: service_started
+
+  service-freight:
+    <<: *backend-defaults
+    container_name: portsofcall-freight
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: service-freight
+    environment:
+      <<: *backend-env
+      DB_NAME: portsofcall_freight
+    depends_on:
+      postgres:
+        condition: service_healthy
+      service-navigation:
+        condition: service_started
+      service-player:
+        condition: service_started
+
+  service-session:
+    <<: *backend-defaults
+    container_name: portsofcall-session
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: service-session
+    environment:
+      <<: *backend-env
+      DB_NAME: portsofcall_sessions
+    depends_on:
+      postgres:
+        condition: service_healthy
+      service-player:
+        condition: service_started
+      service-freight:
+        condition: service_started
+
+  service-game-engine:
+    container_name: portsofcall-game-engine
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: service-game-engine
+    environment:
+      SERVICES_SESSION_URL: http://service-session:8081
+      SERVICES_PLAYER_URL:  http://service-player:8082
+      SERVICES_SHIP_URL:    http://service-freight:8083
+      SERVICES_CARGO_URL:   http://service-freight:8083
+      SERVICES_PORT_URL:    http://service-navigation:8085
+      SERVICES_ROUTE_URL:   http://service-navigation:8085
+    depends_on:
+      service-session:
+        condition: service_started
+      service-player:
+        condition: service_started
+      service-freight:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    container_name: portsofcall-frontend
+    build:
+      context: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      api-gateway:
+        condition: service_started
+    restart: unless-stopped
+
+  api-gateway:
+    container_name: portsofcall-gateway
+    build:
+      context: ./backend
+      args:
+        SERVICE_NAME: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SERVICES_SESSION_URL: http://service-session:8081
+      SERVICES_SESSION_WS:  ws://service-session:8081
+      SERVICES_PLAYER_URL:  http://service-player:8082
+      SERVICES_SHIP_URL:    http://service-freight:8083
+      SERVICES_CARGO_URL:   http://service-freight:8083
+      SERVICES_CARGO_WS:    ws://service-freight:8083
+      SERVICES_PORT_URL:    http://service-navigation:8085
+      SERVICES_ROUTE_URL:   http://service-navigation:8085
+      SERVICES_ENGINE_URL:  http://service-game-engine:8087
+      SERVICES_ENGINE_WS:   ws://service-game-engine:8087
+    depends_on:
+      service-session:
+        condition: service_started
+      service-player:
+        condition: service_started
+      service-freight:
+        condition: service_started
+      service-navigation:
+        condition: service_started
+      service-game-engine:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  pgdata:

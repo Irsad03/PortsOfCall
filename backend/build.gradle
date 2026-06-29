@@ -1,0 +1,33 @@
+plugins {
+    id 'org.sonarqube' version '7.3.1.8318'
+}
+sonar {
+    properties {
+        property 'sonar.projectKey', 'ports-of-call'
+        property 'sonar.projectName', 'Ports of Call'
+        property 'sonar.host.url', System.getProperty('sonar.host.url', 'http://localhost:9000')
+    }
+}
+
+allprojects {
+    group = 'at.fhv'
+    version = '0.0.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {            
+    apply plugin: 'java'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+    }
+}
